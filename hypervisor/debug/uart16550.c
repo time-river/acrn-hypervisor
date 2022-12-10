@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#ifdef CONFIG_UART
+
 #include <types.h>
 #include <asm/lib/spinlock.h>
 #include <pci.h>
@@ -321,3 +323,5 @@ bool get_pio_dbg_uart_cfg(uint16_t *pio_address, uint32_t *nbytes)
 
 	return ret;
 }
+
+#endif

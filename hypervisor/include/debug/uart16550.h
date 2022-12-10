@@ -134,11 +134,24 @@ enum serial_dev_type {
 	MMIO,
 };
 
+#ifdef CONFIG_UART
+
 void uart16550_init(bool early_boot);
 char uart16550_getc(void);
 size_t uart16550_puts(const char *buf, uint32_t len);
 void uart16550_set_property(bool enabled, enum serial_dev_type uart_type, uint64_t base_addr);
 bool is_pci_dbg_uart(union pci_bdf bdf_value);
 bool get_pio_dbg_uart_cfg(uint16_t *pio_address, uint32_t *nbytes);
+
+#else /* !CONFIG_UART */
+
+static inline void uart16550_init(__unused bool early_boot) { return; }
+static inline char uart16550_getc(void) { return -1; }
+static inline size_t uart16550_puts(__unused const char *buf, __unused uint32_t len) { return len; }
+static inline void uart16550_set_property(__unused bool enabled, __unused enum serial_dev_type uart_type, __unused uint64_t base_addr) { return; }
+static inline bool is_pci_dbg_uart(__unused union pci_bdf bdf_value) { return false; }
+static inline bool get_pio_dbg_uart_cfg(__unused uint16_t *pio_address, __unused uint32_t *nbytes) { return false; }
+
+#endif /* !CONFIG_UART */
 
 #endif /* !UART16550_H */
