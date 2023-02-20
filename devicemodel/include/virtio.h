@@ -126,6 +126,8 @@
  * not be implemented.)
  */
 
+#include <pthread.h>
+
 #include <linux/virtio_ring.h>
 #include <linux/virtio_config.h>
 #include <linux/virtio_pci.h>
@@ -194,6 +196,7 @@ enum {
 #define	VIRTIO_TYPE_SCSI	8
 #define	VIRTIO_TYPE_9P		9
 #define	VIRTIO_TYPE_INPUT	18
+#define	VIRTIO_TYPE_SOUND	25
 
 /*
  * ACRN virtio device types
@@ -214,6 +217,7 @@ enum {
 /*
  * PCI vendor/device IDs
  */
+#define VIRTIO_DEV_BASE		0x1040
 #define	INTEL_VENDOR_ID		0x8086
 #define	ORACLE_VENDOR_ID	0x108E
 #define	VIRTIO_VENDOR		0x1AF4
@@ -224,6 +228,7 @@ enum {
 #define	VIRTIO_DEV_GPU		0x1050
 #define	VIRTIO_DEV_VSOCK	0x1053
 #define VIRTIO_DEV_I2C		0x1062
+#define VIRTIO_DEV_SOUND	(VIRTIO_DEV_BASE + VIRTIO_TYPE_SOUND)
 
 /*
  * ACRN virtio device IDs
