@@ -5,8 +5,6 @@
 #ifndef QEMU_VIRTIO_SOUND_H
 #define QEMU_VIRTIO_SOUND_H
 
-#define VIRTIO_SOUND_MAX_STREAMS	1
-
 #define AUDIO_MAX_CHANNELS	16
 
 /* CONFIGURATION SPACE */
@@ -378,12 +376,13 @@ enum {
 #define VIRTIO_AUDIO_RINGSZ	1024
 
 /* Sound device */
+struct virtsnd_backend;
 struct virtio_sound {
 	struct virtio_base base;
 	struct virtio_vq_info vqs[VIRTIO_SND_VQ_MAX];
 	bool ready;
 
-	void *driver;
+	struct virtsnd_backend *driver;
 
 	virtio_snd_config snd_conf;
 
@@ -398,6 +397,30 @@ struct virtio_snd_command {
 	uint16_t *flags;
 	uint32_t iovcnt;
 	uint32_t iolen;
+};
+
+struct pa_stream {
+	char *name;
+	struct pa_proplist proplist;
+	pa_sample_spec sample;
+	pa_channel_map channel;
+};
+
+struct virtsnd_backend {
+	char *name;
+
+	char *server;
+	struct pa_stream sink;
+	struct pa_stream source;
+
+	pa_threaded_mainloop *mainloop;
+	pa_context *context;
+
+	pa_simple *pa_sink;
+	pa_simple *pa_source;
+
+	int (*parse)(struct virtio_sound *snd, char *opts);
+	int (*init)(struct virtio_sound *snd);
 };
 
 #endif

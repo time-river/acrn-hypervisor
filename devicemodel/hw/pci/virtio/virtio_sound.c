@@ -297,19 +297,7 @@ static struct virtio_snd_pcm_stream *virtio_snd_pcm_prepare_impl(struct virtio_s
 	return st;
 }
 
-static int virtio_snd_parse(struct virtio_sound *snd, char *opts)
-{
-	virtio_snd_config *conf = &snd->snd_conf;
-
-	// TODO:
-	conf->streams = VIRTIO_SOUND_MAX_STREAMS;
-	conf->jacks = 0;
-	conf->chmaps = 0;
-
-	return 0;
-}
-
-static int virtio_snd_do_init(struct virtio_sound *snd, char *opts)
+static int virtio_snd_do_init(struct virtio_sound *snd)
 {
 	virtio_snd_pcm_set_params default_params = {
 		.features = 0,
@@ -320,9 +308,6 @@ static int virtio_snd_do_init(struct virtio_sound *snd, char *opts)
 		.rate = VIRTIO_SND_PCM_RATE_44100,
 	};
 	int status;
-
-	if (virtio_snd_parse(snd, opts) != 0)
-		return -1;
 
 	/* pcm streams */
 	// TODO
@@ -351,6 +336,17 @@ err:
 	return -1;
 }
 
+static int virtio_snd_parse(struct virtio_sound *snd, char *opts)
+{
+	if (strcmp(opts, "pa,") == 0) {
+		snd->driver = &pa_driver;
+		return snd->driver->parse(snd, opts+3);
+	}
+
+	pr_err("%s: unsupport backend type\n");
+	return -1;
+}
+
 static int virtio_snd_init(struct vmctx *ctx, struct pci_vdev *dev, char *opts)
 {
 	struct virtio_sound *virt_sound;
@@ -364,7 +360,11 @@ static int virtio_snd_init(struct vmctx *ctx, struct pci_vdev *dev, char *opts)
 		return -1;
 	}
 
-	retval = virtio_snd_do_init(virt_sound, opts);
+	/* parse backend driver */
+	if (virtio_snd_parse(snd, opts) != 0)
+		return -1;
+
+	retval = virtio_snd_do_init(virt_sound);
 	if (retval != 0)
 		goto err;
 
